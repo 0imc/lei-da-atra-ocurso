@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – E-mails autorizados</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --vermelho: #DC2626;
+      --vermelho-hover: #B91C1C;
+      --preto: #0A0A0A;
+      --cinza-900: #111827;
+      --cinza-700: #374151;
+      --branco: #FFFFFF;
+      --cinza-600: #4B5563;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--preto); color: var(--branco); min-height: 100vh; padding: 1.5rem; }
+    .container { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    h1 .accent { color: var(--vermelho); }
+    .sub { color: var(--cinza-600); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .form label { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; color: var(--cinza-600); }
+    .form input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--cinza-600);
+      border-radius: 8px;
+      background: var(--cinza-900);
+      color: var(--branco);
+      font-size: 1rem;
+    }
+    .form input:focus { outline: none; border-color: var(--vermelho); }
+    .btn {
+      padding: 0.65rem 1.2rem;
+      background: var(--vermelho);
+      color: var(--branco);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--vermelho-hover); }
+    .btn.outline { background: transparent; border: 1px solid var(--cinza-600); margin-left: 0.5rem; }
+    .btn.outline:hover { border-color: var(--branco); }
+    .error { color: #ef4444; font-size: 0.85rem; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+    .success { color: #22c55e; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .list { margin-top: 1.5rem; }
+    .list h3 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--cinza-600); }
+    .list ul { list-style: none; }
+    .list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.8rem;
+      background: var(--cinza-900);
+      border-radius: 6px;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+    .list li span { color: var(--cinza-600); font-size: 0.8rem; }
+    .list li button { background: transparent; border: none; color: var(--vermelho); cursor: pointer; font-size: 0.85rem; }
+    .list li button:hover { text-decoration: underline; }
+    .row { display: flex; align-items: flex-end; gap: 0.5rem; flex-wrap: wrap; }
+    .row input { flex: 1; min-width: 200px; margin-bottom: 0; }
+    .logout { margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Área <span class="accent">Admin</span></h1>
+    <p class="sub">E-mails autorizados a criar conta no curso.</p>
+
+    <div id="panel-login" class="panel active">
+      <form id="form-admin-login" class="form">
+        <label for="admin-password">Senha de administrador</label>
+        <input type="password" id="admin-password" name="password" required placeholder="••••••••">
+        <p id="admin-login-error" class="error" style="display: none;"></p>
+        <button type="submit" class="btn">Entrar</button>
+      </form>
+    </div>
+
+    <div id="panel-dashboard" class="panel">
+      <form id="form-add-email" class="form">
+        <label for="new-email">Adicionar e-mail autorizado</label>
+        <div class="row">
+          <input type="email" id="new-email" name="email" required placeholder="comprador@email.com">
+          <button type="submit" class="btn">Adicionar</button>
+        </div>
+        <p id="add-error" class="error" style="display: none;"></p>
+        <p id="add-success" class="success" style="display: none;"></p>
+      </form>
+      <div class="list">
+        <h3>E-mails autorizados</h3>
+        <ul id="authorized-list"></ul>
+      </div>
+      <div class="logout">
+        <button type="button" id="btn-logout" class="btn outline">Sair do admin</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const api = (path, opts = {}) => fetch(path, {
+      method: opts.method || 'GET',
+      headers: opts.body ? { 'Content-Type': 'application/json' } : {},
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      credentials: 'include'
+    });
+
+    const panelLogin = document.getElementById('panel-login');
+    const panelDashboard = document.getElementById('panel-dashboard');
+    const authorizedList = document.getElementById('authorized-list');
+
+    function showPanel(panel) {
+      panelLogin.classList.remove('active');
+      panelDashboard.classList.remove('active');
+      panel.classList.add('active');
+    }
+
+    function loadList() {
+      api('/api/admin/authorized-emails')
+        .then(r => r.json())
+        .then(data => {
+          if (data.list && data.list.length) {
+            authorizedList.innerHTML = data.list.map(item =>
+              '<li><span>' + item.email + '</span> <span>' + (item.created_at || '') + '</span> <button type="button" data-id="' + item.id + '">Remover</button></li>'
+            ).join('');
+            authorizedList.querySelectorAll('button[data-id]').forEach(btn => {
+              btn.onclick = () => {
+                if (!confirm('Remover este e-mail da lista?')) return;
+                api('/api/admin/authorized-emails/' + btn.dataset.id, { method: 'DELETE' })
+                  .then(r => { if (r.ok) loadList(); });
+              };
+            });
+          } else {
+            authorizedList.innerHTML = '<li style="color:var(--cinza-600);">Nenhum e-mail autorizado ainda.</li>';
+          }
+        })
+        .catch(() => { authorizedList.innerHTML = '<li style="color:#ef4444;">Erro ao carregar.</li>'; });
+    }
+
+    api('/api/admin/me').then(r => {
+      if (r.ok) {
+        showPanel(panelDashboard);
+        loadList();
+      }
+    });
+
+    document.getElementById('form-admin-login').onsubmit = async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('admin-password').value;
+      const errEl = document.getElementById('admin-login-error');
+      errEl.style.display = 'none';
+      const r = await api('/api/admin/login', { method: 'POST', body: { password } });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        errEl.textContent = data.error || 'Senha incorreta.';
+        errEl.style.display = 'block';
+        return;
+      }
+      showPanel(panelDashboard);
+      loadList();
+    };
+
+    document.getElementById('form-add-email').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('new-email').value.trim();
+      const errEl = document.getElementById('add-error');
+      const okEl = document.getElementById('add-success');
+      errEl.style.display = 'none';
+      okEl.style.display = 'none';
+      const r = await api('/api/admin/authorized-emails', { method: 'POST', body: { email } });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        errEl.textContent = data.error || 'Não foi possível adicionar.';
+        errEl.style.display = 'block';
+        return;
+      }
+      okEl.textContent = 'E-mail autorizado adicionado.';
+      okEl.style.display = 'block';
+      document.getElementById('new-email').value = '';
+      loadList();
+    };
+
+    document.getElementById('btn-logout').onclick = async () => {
+      await api('/api/admin/logout', { method: 'POST' });
+      showPanel(panelLogin);
+      document.getElementById('admin-password').value = '';
+    };
+  </script>
+</body>
+</html>

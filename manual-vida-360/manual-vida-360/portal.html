@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual da Vida 360 — Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="theme-dark">
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <header id="topbar" class="topbar">
+    <div class="brand" aria-label="Manual da Vida 360">
+      <span class="brand-text">Manual da Vida</span>
+      <span class="brand-360">360</span>
+      <span class="brand-ring" aria-hidden="true"></span>
+    </div>
+    <nav class="nav">
+      <a href="#modulos" class="nav-link" data-sfx="click">Módulos</a>
+      <a href="#suporte" class="nav-link" data-sfx="click">Suporte</a>
+      <button id="ambient-toggle" class="chip" data-sfx="click">Som ambiente: off</button>
+      <button id="theme-toggle" class="chip" data-sfx="click">Modo diurno</button>
+      <button id="logout" class="chip chip-danger" data-sfx="click">Sair</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="welcome" class="section hero">
+      <div class="hero-inner">
+        <h1 class="headline glow">Portal de Acesso — Manual da Vida 360</h1>
+        <p id="welcome-msg" class="subtitle"></p>
+      </div>
+    </section>
+
+    <section id="modulos" class="section modules">
+      <h2 class="section-title fade-up">Módulos</h2>
+      <div class="modules-grid">
+        <button class="module-card" data-pdf="assets/pdfs/dinheiro-360.pdf" data-title="💰 Dinheiro 360" data-sfx="click">
+          <span class="module-icon">💰</span>
+          <span class="module-title">Dinheiro 360</span>
+        </button>
+        <button class="module-card" data-pdf="assets/pdfs/mente-360.pdf" data-title="🧠 Mente 360" data-sfx="click">
+          <span class="module-icon">🧠</span>
+          <span class="module-title">Mente 360</span>
+        </button>
+        <button class="module-card" data-pdf="assets/pdfs/corpo-360.pdf" data-title="💪 Corpo 360" data-sfx="click">
+          <span class="module-icon">💪</span>
+          <span class="module-title">Corpo 360</span>
+        </button>
+        <button class="module-card" data-pdf="assets/pdfs/relacionamentos-360.pdf" data-title="❤ Relacionamentos 360" data-sfx="click">
+          <span class="module-icon">❤</span>
+          <span class="module-title">Relacionamentos 360</span>
+        </button>
+        <button class="module-card" data-pdf="assets/pdfs/vida-digital-inteligente.pdf" data-title="💻 Vida Digital Inteligente (Bônus)" data-sfx="click">
+          <span class="module-icon">💻</span>
+          <span class="module-title">Vida Digital Inteligente (Bônus)</span>
+        </button>
+        <button class="module-card" data-pdf="assets/pdfs/conclusao-plano-360.pdf" data-title="🌟 Conclusão / Plano 360" data-sfx="click">
+          <span class="module-icon">🌟</span>
+          <span class="module-title">Conclusão / Plano 360</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="suporte" class="section support">
+      <h2 class="section-title fade-up">Suporte</h2>
+      <div class="support-links">
+        <a class="support-link" href="https://wa.me/5531995104346" target="_blank" rel="noopener" data-sfx="click">💬 WhatsApp de suporte</a>
+        <a class="support-link" href="https://t.me/manualdavidapremium" target="_blank" rel="noopener" data-sfx="click">📢 Canal de afiliados (Telegram)</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-glow" aria-hidden="true"></div>
+    <div class="footer-inner">
+      <div class="icons">
+        <span class="icon glow">💬</span>
+        <span class="icon glow">📢</span>
+        <span class="icon glow">📄</span>
+        <span class="icon glow">⭐</span>
+      </div>
+      <p>© 2025 Manual da Vida 360 — Todos os direitos reservados. Feito com propósito, mente e energia.</p>
+    </div>
+  </footer>
+
+  <!-- Modal PDF -->
+  <div id="pdf-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close="modal"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="modal-title">Módulo</h3>
+        <div class="modal-actions">
+          <button class="chip" id="zoom-in" title="Zoom +" data-sfx="click">+</button>
+          <button class="chip" id="zoom-out" title="Zoom -" data-sfx="click">−</button>
+          <button class="chip" id="close-modal" data-close="modal" data-sfx="click">Fechar</button>
+        </div>
+      </header>
+      <div class="modal-body">
+        <iframe id="pdf-frame" title="Visualização do PDF" src="" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <button id="to-top" class="to-top" title="Voltar ao topo" data-sfx="click">⟳ 360</button>
+
+  <script src="./app.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // proteção simples de sessão
+      const auth = localStorage.getItem('mv360_auth');
+      if (!auth) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      initParticlesBackground();
+      initSounds();
+      initThemeToggle();
+      initFadeUpOnScroll();
+      initScrollBands();
+      initToTop();
+
+      const welcomeMsg = sessionStorage.getItem('mv360_welcome') || '';
+      document.getElementById('welcome-msg').textContent = welcomeMsg;
+
+      // Navbar shrink / color transition
+      const topbar = document.getElementById('topbar');
+      window.addEventListener('scroll', () => {
+        topbar.classList.toggle('scrolled', window.scrollY > 10);
+      });
+
+      // PDF modal
+      const modal = document.getElementById('pdf-modal');
+      const frame = document.getElementById('pdf-frame');
+      const title = document.getElementById('modal-title');
+      document.querySelectorAll('.module-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playClick();
+          title.textContent = btn.dataset.title || 'Módulo';
+          frame.src = btn.dataset.pdf || '';
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('modal-open');
+        });
+      });
+      document.querySelectorAll('[data-close="modal"]').forEach(el => {
+        el.addEventListener('click', () => closeModal());
+      });
+
+      document.getElementById('zoom-in').addEventListener('click', () => zoomFrame(1.1));
+      document.getElementById('zoom-out').addEventListener('click', () => zoomFrame(0.9));
+
+      function closeModal(){
+        playClick();
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+        frame.src = '';
+      }
+      function zoomFrame(mult){
+        try {
+          const doc = frame.contentDocument || frame.contentWindow.document;
+          const html = doc.querySelector('html');
+          const current = parseFloat(html.style.zoom || '1');
+          const next = Math.min(2.0, Math.max(0.5, current * mult));
+          html.style.zoom = String(next);
+        } catch(e) {
+          // fallback não-zoomável
+        }
+      }
+
+      document.getElementById('ambient-toggle').addEventListener('click', toggleAmbient);
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      document.getElementById('logout').addEventListener('click', () => {
+        playClick();
+        localStorage.removeItem('mv360_auth');
+        window.location.href = 'index.html';
+      });
+    });
+  </script>
+</body>
+</html>
+
+

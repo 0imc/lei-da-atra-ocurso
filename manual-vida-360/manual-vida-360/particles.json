@@ -1,0 +1,9 @@
+{
+  "note": "Este arquivo é um placeholder caso queira usar uma lib externa de partículas.",
+  "preset": "gold-drift",
+  "count": 120,
+  "colors": ["#FFD700", "#FFC300", "#FFEA70"],
+  "speed": 0.3
+}
+
+

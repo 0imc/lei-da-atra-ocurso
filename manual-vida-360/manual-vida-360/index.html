@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual da Vida 360 — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="theme-dark">
+  <!-- Partículas de fundo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Loader inicial -->
+  <div id="loader" class="loader-overlay" role="status" aria-live="polite">
+    <div class="loader-ring"></div>
+    <div class="loader-glow"></div>
+  </div>
+
+  <main class="login-wrapper">
+    <section class="login-card fade-up" aria-labelledby="login-title">
+      <div class="logo-360" aria-hidden="true">
+        <span class="logo-text">Manual da Vida</span>
+        <span class="logo-360-number">360</span>
+        <span class="logo-ring" aria-hidden="true"></span>
+      </div>
+
+      <h1 id="login-title" class="headline typewriter" data-typewriter="Bem-vindo ao Manual da Vida 360"></h1>
+      <p class="subtitle">Prepare-se para elevar sua mente, seu corpo e seu espírito. O portal está aberto.</p>
+
+      <form id="login-form" class="form" autocomplete="on">
+        <label class="field">
+          <span>E-mail</span>
+          <input id="email" type="email" placeholder="voce@email.com" required>
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input id="password" type="password" placeholder="••••••••" required>
+        </label>
+        <button id="login-button" type="submit" class="btn btn-gold" data-sfx="click">
+          Entrar
+        </button>
+      </form>
+
+      <div class="controls-row">
+        <button id="ambient-toggle" class="chip" aria-pressed="false" data-sfx="click">Som ambiente: off</button>
+        <button id="theme-toggle" class="chip" aria-pressed="false" data-sfx="click">Modo diurno</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      initParticlesBackground();
+      initTypewriter();
+      initSounds();
+      initThemeToggle();
+
+      const form = document.getElementById('login-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        playClick();
+        showLoader(true);
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        // Login simples em memória
+        const ok = email.length > 3 && password.length > 3;
+        setTimeout(() => {
+          if (ok) {
+            localStorage.setItem('mv360_auth', JSON.stringify({ email, ts: Date.now() }));
+            sessionStorage.setItem('mv360_welcome', 'Bem-vindo(a), ' + email + '!');
+            window.location.href = 'portal.html';
+          } else {
+            showLoader(false);
+            alert('Verifique seu e-mail e senha.');
+          }
+        }, 900);
+      });
+
+      document.getElementById('ambient-toggle').addEventListener('click', toggleAmbient);
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    });
+  </script>
+</body>
+</html>
+
+
