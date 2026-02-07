@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – Curso Lei da Atração</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --vermelho: #DC2626;
+      --vermelho-hover: #B91C1C;
+      --preto: #0A0A0A;
+      --cinza-900: #111827;
+      --branco: #FFFFFF;
+      --cinza-600: #4B5563;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--preto);
+      color: var(--branco);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .container { width: 100%; max-width: 420px; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    h1 .accent { color: var(--vermelho); }
+    .sub { color: var(--cinza-600); font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .alert {
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid var(--vermelho);
+      color: var(--branco);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .alert.blocked { white-space: pre-line; }
+    .security-msg {
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(220, 38, 38, 0.12);
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .form label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--cinza-600); }
+    .form input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--cinza-600);
+      border-radius: 8px;
+      background: var(--cinza-900);
+      color: var(--branco);
+      font-size: 1rem;
+    }
+    .form input:focus { outline: none; border-color: var(--vermelho); }
+    .btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--vermelho);
+      color: var(--branco);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .btn:hover { background: var(--vermelho-hover); }
+    .link-register { display: block; text-align: center; margin-top: 1rem; color: var(--cinza-600); font-size: 0.9rem; }
+    .link-register a { color: var(--vermelho); text-decoration: none; }
+    .link-register a:hover { text-decoration: underline; }
+    .error-field { color: #ef4444; font-size: 0.85rem; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Curso <span class="accent">Lei da Atração</span></h1>
+    <p class="sub">Acesso exclusivo para compradores.</p>
+
+    <p class="security-msg">Este curso é de acesso individual. O compartilhamento de login pode resultar em bloqueio automático da conta.</p>
+
+    <div id="alert-blocked" class="alert blocked" style="display: none;">
+      ⚠️ Acesso bloqueado.
+      Este curso é individual e exclusivo. Detectamos tentativa de acesso simultâneo ou compartilhamento de conta.
+      Caso você tenha trocado de dispositivo, faça login novamente. Se o problema persistir, entre em contato com o suporte.
+    </div>
+    <div id="alert-unauthorized" class="alert" style="display: none;">Faça login para acessar o curso.</div>
+
+    <form id="form-login" class="form">
+      <label for="login-email">E-mail</label>
+      <input type="email" id="login-email" name="email" required placeholder="seu@email.com">
+      <label for="login-password">Senha</label>
+      <input type="password" id="login-password" name="password" required placeholder="••••••••">
+      <p id="login-error" class="error-field" style="display: none;"></p>
+      <button type="submit" class="btn">Entrar</button>
+    </form>
+    <p class="link-register">Não tem conta? <a href="register.html">Criar conta</a></p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    if (params.get('error') === 'blocked') document.getElementById('alert-blocked').style.display = 'block';
+    if (params.get('error') === 'unauthorized') document.getElementById('alert-unauthorized').style.display = 'block';
+
+    const api = (path, body) => fetch(path, {
+      method: body ? 'POST' : 'GET',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'include'
+    });
+
+    document.getElementById('form-login').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+      errEl.style.display = 'none';
+      try {
+        const r = await api('/api/auth/login', { email, password });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          errEl.textContent = data.error || 'E-mail ou senha incorretos.';
+          errEl.style.display = 'block';
+          return;
+        }
+        window.location.href = '/curso';
+      } catch (err) {
+        errEl.textContent = 'Erro de conexão. Tente novamente.';
+        errEl.style.display = 'block';
+      }
+    };
+  </script>
+</body>
+</html>
